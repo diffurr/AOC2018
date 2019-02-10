@@ -1,0 +1,9 @@
+D:\dev\aoc2018\d4\cs\d4b\bin\Debug\d4b.exe.config
+D:\dev\aoc2018\d4\cs\d4b\bin\Debug\d4b.exe
+D:\dev\aoc2018\d4\cs\d4b\bin\Debug\d4b.pdb
+D:\dev\aoc2018\d4\cs\d4b\obj\Debug\d4b.csproj.CoreCompileInputs.cache
+D:\dev\aoc2018\d4\cs\d4b\obj\Debug\d4b.exe
+D:\dev\aoc2018\d4\cs\d4b\obj\Debug\d4b.pdb
+D:\dev\aoc2018\d4\cs\d4b\bin\Debug\d4b.exe.CodeAnalysisLog.xml
+D:\dev\aoc2018\d4\cs\d4b\bin\Debug\d4b.exe.lastcodeanalysissucceeded
+D:\dev\aoc2018\d4\cs\d4b\obj\Debug\d4b.csprojAssemblyReference.cache
