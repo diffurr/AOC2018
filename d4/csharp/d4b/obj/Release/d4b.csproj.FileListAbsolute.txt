@@ -1,6 +1,0 @@
-D:\dev\aoc2018\d4\cs\d4b\bin\Release\d4b.exe.config
-D:\dev\aoc2018\d4\cs\d4b\bin\Release\d4b.exe
-D:\dev\aoc2018\d4\cs\d4b\bin\Release\d4b.pdb
-D:\dev\aoc2018\d4\cs\d4b\obj\Release\d4b.csproj.CoreCompileInputs.cache
-D:\dev\aoc2018\d4\cs\d4b\obj\Release\d4b.exe
-D:\dev\aoc2018\d4\cs\d4b\obj\Release\d4b.pdb
