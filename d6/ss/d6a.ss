@@ -52,34 +52,27 @@
 ;item = item to initialize
 (define make-array-2d
   (lambda (c r item)
-    (make-Array2D (make-vector (* c r) item) c r)
-  ))
+    (make-Array2D (make-vector (* c r) item) c r)))
 
 ;return # of columns
 (define array-2d-cols
   (lambda (array)
-    (Array2D-cols array)
-  ))
+    (Array2D-cols array)))
 
 ;return # of rows
 (define array-2d-rows
   (lambda (array)
-    (Array2D-rows array)
-  ))
+    (Array2D-rows array)))
 
 (define array-2d-ref
   (lambda (array c r)
     (let ([index (+ (* r (Array2D-cols array)) c)])
-      (vector-ref (Array2D-vec array) index)
-    )
-  ))
+      (vector-ref (Array2D-vec array) index))))
 
 (define array-2d-set!
   (lambda (array c r item)
     (let ([index (+ (* r (Array2D-cols array)) c)])
-      (vector-set! (Array2D-vec array) index item)
-    )
-  ))
+      (vector-set! (Array2D-vec array) index item))))
 ;-------------------------------------------------------------------
 ;parsed information from data file
 ;coords - coordinates, list of pairs of numbers
@@ -165,8 +158,7 @@
         )
         (let ([answer (call-with-values (lambda () (hashtable-entries htable))
          (lambda (keys values) (vector-sort > values)))])
-        (vector-ref answer 0))
-        ))))
+        (vector-ref answer 0))))))
 
 (define add-to-table
   (lambda (htable proc c r cols rows id)
@@ -191,13 +183,11 @@
   (lambda (input)
     (make-array-2d (+ (Input-xdim input) 1)
                    (+ (Input-ydim input) 1)
-                   (cons -1  (greatest-fixnum)))
-  ))
+                   (cons -1  (greatest-fixnum)))))
 
 (define make-points
   (lambda (info)
-    (list->vector (Input-coords info))
-  ))
+    (list->vector (Input-coords info))))
 
 ;create pair of numbers from string
 (define parse-line
@@ -225,4 +215,5 @@
 (define points (make-points data))
 (time (mark-arena arena points))
 (time (largest-area arena))
+(display (largest-area arena))
 (exit)

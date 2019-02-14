@@ -1,6 +1,8 @@
 #!r6rs
 (import (rnrs (6)))
 
+;using mutable locs in vector of locs
+
 ;HELPER FUNCTIONS
 (define string-split
   (lambda (line delim)
@@ -44,8 +46,8 @@
                                   (immutable ymax)))
 
 (define-record-type Loc (fields (immutable cord)
-                                (immutable id)
-                                (immutable dist)))
+                                (mutable id)
+                                (mutable dist)))
 
 (define read-input
   (lambda (filename)
@@ -71,7 +73,7 @@
                   (let ([cord (cons x y)][id -1][dist (greatest-fixnum)])
                     (j (+ x 1) (cons (make-Loc cord id dist) locs)))
                   (i (+ y 1) locs)))
-              (make-Grid locs xmax ymax))))))
+              (make-Grid (list->vector locs) xmax ymax))))))
 
 ;make points from input
 (define make-points
@@ -79,15 +81,21 @@
     (Input-coords data)))
 
 ;for each point in list of points map point to grid of locations and get new grid with updated locs
+;this version dont produce new list or vector
+;mutate id and dist in each loc
+;this make vector also mutated
 (define get-distances
   (lambda (points grid)
-    (let for-each-point ([points points][locs (Grid-locs grid)][id 1])
+    (define locs (Grid-locs grid))
+    (let for-each-point ([points points][id 1])
       (if (null? points)
         (make-Grid locs (Grid-xmax grid) (Grid-ymax grid)) 
+        ((lambda ()
+        (vector-for-each (distance-from (car points) id) locs)
         (for-each-point (cdr points) 
-                        (map (distance-from (car points) id) locs)
-                        (+ id 1))))))
-
+                        (+ id 1))))))))
+          
+;key part in locs mutating
 ;clojure - function distance-from return function 
 (define distance-from 
   (lambda (point id)
@@ -95,9 +103,11 @@
       (let ([manhattan-dist (manhattan point (Loc-cord loc))]
             [location-dist (Loc-dist loc)])
             (cond 
-              [(< manhattan-dist location-dist) (make-Loc (Loc-cord loc) id manhattan-dist)]
-              [(= manhattan-dist location-dist) (make-Loc (Loc-cord loc) -1 manhattan-dist)]
-              [else loc])))))
+              [(< manhattan-dist location-dist) 
+              ((lambda () (Loc-id-set! loc id)(Loc-dist-set! loc manhattan-dist)))]
+              [(= manhattan-dist location-dist)
+              ((lambda () (Loc-id-set! loc -1)(Loc-dist-set! loc manhattan-dist)))]
+              [else 'dont-change-loc])))))
 
 (define manhattan
   (lambda (p1 p2)
@@ -109,7 +119,7 @@
 (define largest-area
   (lambda (grid)
     (let ([htable (make-eqv-hashtable 100)])
-      (for-each (count-locations htable (Grid-xmax grid) (Grid-ymax grid)) (Grid-locs grid))
+      (vector-for-each (count-locations htable (Grid-xmax grid) (Grid-ymax grid)) (Grid-locs grid))
       (get-max-value htable))))
 
 (define get-max-value
@@ -152,7 +162,6 @@
 (define input-grid (make-grid data))
 (define points (make-points data))
 (time (get-distances points input-grid))
-(define output-grid (get-distances points input-grid))
-(time (largest-area output-grid))
-(display (largest-area output-grid))
+(time (largest-area input-grid))
+(display (largest-area input-grid))
 (exit)
