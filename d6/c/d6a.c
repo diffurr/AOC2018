@@ -21,16 +21,14 @@
 #define _size(array)		((int*) array - 2)[0]
 #define _capacity(array)	((int*) array - 2)[1]
 
-#define _grow(array)	array = realloc((int*) array - 2, (_capacity(array) * 2) * sizeof(array[0]) + sizeof(int) * 2);\
-						((int*) array)[0] = ((int*) array)[0];\
-						((int*) array)[1] = ((int*) array)[1] * 2;\
+#define _grow(array)	_capacity(array) = _capacity(array) * 2;\
+						array = realloc((int*) array - 2, sizeof(int) * 2 + _capacity(array) * sizeof(array[0]));\
 						array = (int*)array + 2;
 
-#define init_array(array, cap)		int capacity = (cap <= 0) ? 1 : cap;\
-									array = malloc(sizeof(int) * 2 + sizeof(array[0]) * capacity);\
-									((int*) array)[0] = 0;\
-									((int*) array)[1] = capacity;\
-									array = (int*)array + 2
+#define init_array(array, cap)	array = malloc(sizeof(int) * 2 + sizeof(array[0]) * ((cap <= 0) ? 1 : cap));\
+								array = (int*)array + 2;\
+								_size(array) = 0;\
+								_capacity(array) = (cap <= 0) ? 1 : cap
 
 #define push(array, item)	if(_capacity(array) == _size(array)) { _grow(array) }\
 								array[_size(array)++] = item
