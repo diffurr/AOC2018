@@ -67,12 +67,15 @@ public class d6b {
                 int sumdist = 0;
                 p2.x = x;
                 p2.y = y;
+                regions++;
                 for (Point p : points) {
                     int dist = manhattan(p, p2);
                     sumdist += dist;
-                    if (sumdist >= maxdist) break;
+                    if (sumdist >= maxdist) {
+                        regions--;
+                        break;
+                    }
                 }
-                if (sumdist < maxdist) regions++;
             }
         }
         return regions;
