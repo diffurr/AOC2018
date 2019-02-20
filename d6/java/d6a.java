@@ -83,11 +83,11 @@ public class d6a {
                     else if (dist == mindist) same = true;
                     //else do nothing, go to next point
                 }
-                if (!same && !input.infinit(x, y) && ids[minid] != -1) {
-                    ids[minid]++;
-                }
-                else if (input.infinit(x, y)) {
+                if (input.infinit(x, y)) {
                     ids[minid] = -1;
+                }
+                else if (!same && !input.infinit(x, y) && ids[minid] != -1) {
+                    ids[minid]++;
                 }
             }
         }
