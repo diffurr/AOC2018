@@ -40,15 +40,16 @@ typedef struct Point {
 	int x, y;
 } Point ;
 
-typedef struct Grid {
-	int *locs;
+typedef struct Input {
+	Point *points;
 	int xmax, ymax, xdim, ydim;
-} Grid;
+} Input;
 
-void read_input(FILE *fp, Grid *grid, Point **_points)
+Input *read_input(FILE *fp)
 {
 	char buffer[BUFSIZ];
-	Point *points = *_points;
+	Point *points = NULL;
+    init_array(points, 10);
 	Point p;
 	int xmax = 0;
 	int ymax = 0;
@@ -60,12 +61,13 @@ void read_input(FILE *fp, Grid *grid, Point **_points)
 		push(points, p);
 	}
 
-	*_points = points;
-	grid->xmax = xmax;
-	grid->ymax = ymax;
-	grid->xdim = xmax + 1;
-	grid->ydim = ymax + 1;
-	grid->locs = malloc(sizeof(int) * (grid->xdim * grid->ydim));
+    Input *input = (Input*) malloc(sizeof(Input));
+    input->points = points;
+    input->xmax = xmax;
+    input->ymax = ymax;
+    input->xdim = xmax + 1;
+    input->ydim = ymax + 1;
+    return input;
 }
 
 int manhattan(const Point p1, const Point p2)
@@ -73,28 +75,31 @@ int manhattan(const Point p1, const Point p2)
 	return abs(p1.x - p2.x) + abs(p1.y - p2.y);
 }
 
-int dist_below(const Grid *grid, const Point *points, const int maxdist)
+int get_answer(const Input *input, const int maxdist)
 {
-	int nbelow = 0;
-	int xdim = grid->xdim;
-	int ydim = grid->ydim;
-	int distsum;
-	int p;
-	Point p2;
+    Point *points = input->points;
+    Point p2;
+    int plen = size(points);
+    int xdim = input->xdim;
+    int ydim = input->ydim;
+    int regions = 0;
 
-	for (int y = 0; y < ydim; y++) {
-		for (int x = 0; x < xdim; x++) {
-			distsum = 0;
-			p = 0;
-			p2.x = x;
-			p2.y = y;
-			while (distsum < maxdist && p < size(points)) {
-					distsum += manhattan(points[p++], p2);
-			}
-			if (distsum < maxdist) nbelow++;
-		}
-	}
-	return nbelow;
+    for (int y = 0; y < ydim; y++) {
+        for (int x = 0; x < xdim; x++) {
+            int sumdist = 0;
+            regions++;
+            p2.x = x, p2.y = y;
+            for (int p = 0; p < plen; p++) {
+                sumdist += manhattan(points[p], p2);
+                if (sumdist >= maxdist) {
+                    regions--;
+                    break;
+                }
+            }
+        }
+    }
+    
+    return regions;
 }
 
 int main(void)
@@ -109,13 +114,10 @@ int main(void)
 	}
 ;
 	int answer = 0;
-	Grid grid;
-	Point *points = NULL;
-	init_array(points, 10);
 
-	read_input(fp, &grid, &points);
+	Input *input = read_input(fp);
 	START_PERF(start);
-	answer = dist_below(&grid, points, 10000);
+	answer = get_answer(input, 10000);
 	END_PERF(start, timing);
 
 	printf("answer: %d\n", answer);

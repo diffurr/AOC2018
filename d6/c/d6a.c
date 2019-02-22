@@ -22,10 +22,10 @@
 #define _capacity(array)	((int*) array - 2)[1]
 
 #define _grow(array)	_capacity(array) = _capacity(array) * 2;\
-						array = realloc((int*) array - 2, sizeof(int) * 2 + _capacity(array) * sizeof(array[0]));\
+						array = realloc((int*) array - 2, sizeof(int) * 2 + _capacity(array) * sizeof(*array));\
 						array = (int*)array + 2;
 
-#define init_array(array, cap)	array = malloc(sizeof(int) * 2 + sizeof(array[0]) * ((cap <= 0) ? 1 : cap));\
+#define init_array(array, cap)	array = malloc(sizeof(int) * 2 + sizeof(*array) * ((cap <= 0) ? 1 : cap));\
 								array = (int*)array + 2;\
 								_size(array) = 0;\
 								_capacity(array) = (cap <= 0) ? 1 : cap
@@ -40,15 +40,16 @@ typedef struct Point {
 	int x, y;
 } Point ;
 
-typedef struct Grid {
-	int *locs;
+typedef struct Input {
+	Point *points;
 	int xmax, ymax, xdim, ydim;
-} Grid;
+} Input;
 
-void read_input(FILE *fp, Grid *grid, Point **_points)
+Input *read_input(FILE *fp)
 {
 	char buffer[BUFSIZ];
-	Point *points = *_points;
+	Point *points = NULL;
+    init_array(points, 10);
 	Point p;
 	int xmax = 0;
 	int ymax = 0;
@@ -60,41 +61,18 @@ void read_input(FILE *fp, Grid *grid, Point **_points)
 		push(points, p);
 	}
 
-	*_points = points;
-	grid->xmax = xmax;
-	grid->ymax = ymax;
-	grid->xdim = xmax + 1;
-	grid->ydim = ymax + 1;
-	grid->locs = malloc(sizeof(int) * (grid->xdim * grid->ydim));
+    Input *input = (Input*) malloc(sizeof(Input));
+    input->points = points;
+    input->xmax = xmax;
+    input->ymax = ymax;
+    input->xdim = xmax + 1;
+    input->ydim = ymax + 1;
+    return input;
 }
 
 int manhattan(const Point p1, const Point p2)
 {
 	return abs(p1.x - p2.x) + abs(p1.y - p2.y);
-}
-
-void get_distances(Grid *grid, const Point* points)
-{
-	int *locs = grid->locs;
-	Point p2;
-	int mindist, minpoint, dist;
-	const int xdim = grid->xdim;
-	const int ydim = grid->ydim;
-
-	for (int y = 0; y < ydim; y++) {
-		for (int x = 0; x < xdim; x++) {
-			minpoint = 0;
-			mindist = INT_MAX;
-			p2.x = x;
-			p2.y = y;
-			for (int p = 0; p < size(points); p++) {
-				dist = manhattan(points[p], p2);
-				if (dist < mindist) { mindist = dist, minpoint = p; }
-				else if (dist == mindist) { mindist = dist, minpoint = -1; };
-			}
-			locs[y * xdim + x] = minpoint;
-		}
-	}
 }
 
 int infinit(int x, int y, int xmax, int ymax)
@@ -107,30 +85,43 @@ int greater(void* context, const void* elem1, const void* elem2)
 	return ~(*(int*)elem1 - *(int*)elem2);
 }
 
-int largest_area(const Grid *grid, const int npoints)
+int get_answer(const Input* input)
 {
-	int* ids = calloc(npoints, sizeof(int));
-	const int xdim = grid->xdim;
-	const int ydim = grid->ydim;
-	const int xmax = grid->xmax;
-	const int ymax = grid->ymax;
-	const int* locs = grid->locs;
-	int id, answer;
+    Point *points = input->points;
+    Point p2;
+    int plen = size(points);
+    int *ids = calloc(plen, sizeof(int));
+    int ydim = input->ydim;
+    int xdim = input->xdim;
+    int xmax = input->xmax;
+    int ymax = input->ymax;
+    int answer = 0;
 
 	for (int y = 0; y < ydim; y++) {
 		for (int x = 0; x < xdim; x++) {
-			id = locs[y * xdim + x];
-			if (id != -1 && ids[id] != -1) {
-				if (infinit(x, y, xmax, ymax)) ids[id] = -1;
-				else ids[id]++;
-			}
-		}
-	}
+			int minid = 0;
+			int mindist = INT_MAX;
+            int same = 0;
+			p2.x = x;
+			p2.y = y;
+			for (int p = 0; p < plen; p++) {
+				int dist = manhattan(points[p], p2);
+				if (dist < mindist) { mindist = dist, minid = p, same = 0; }
+				else if (dist == mindist) { same = 1; };
+            }
+            if (infinit(x, y, xmax, ymax)) {
+               ids[minid] = -1;
+            }
+            else if (!same && ids[minid] != -1 && !infinit(x, y, xmax, ymax)) {
+               ids[minid]++; 
+            }
+        }
+    }
 
-	qsort_s(ids, npoints, sizeof(int), greater, NULL);
-	answer = ids[0];
-	free(ids);
-	return answer;
+    qsort_s(ids, plen, sizeof(int), greater, NULL);
+    answer = ids[0];
+    free(ids);
+    return answer;
 }
 
 int main(void)
@@ -145,19 +136,16 @@ int main(void)
 	}
 ;
 	int answer = 0;
-	Grid grid;
-	Point *points = NULL;
-	init_array(points, 10);
 
-	read_input(fp, &grid, &points);
+	Input *input = read_input(fp);
 	START_PERF(start);
-	get_distances(&grid, points);
-	answer = largest_area(&grid, size(points));
+	//get_distances(&grid, points);
+	//answer = largest_area(&grid, size(points));
+    answer = get_answer(input);
 	END_PERF(start, timing);
 
 	printf("answer: %d\n", answer);
 	DISPLAY_PERF(timing, freq, MS_UNIT_PERF);
-	getchar();
 	return 0;
 }
 #pragma warning(pop)
